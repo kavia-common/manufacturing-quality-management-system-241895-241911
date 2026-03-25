@@ -1,5 +1,6 @@
 const cors = require('cors');
 const express = require('express');
+const path = require('path');
 const routes = require('./routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('../swagger');
@@ -38,8 +39,15 @@ app.use('/docs', swaggerUi.serve, (req, res, next) => {
   swaggerUi.setup(dynamicSpec)(req, res, next);
 });
 
+/**
+ * Serve uploaded files.
+ * NOTE: Upload destination is configured by UPLOAD_DIR. Defaults to "<process.cwd()>/uploads".
+ */
+const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+app.use('/uploads', express.static(uploadDir, { fallthrough: false }));
+
 // Parse JSON request body
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 
 // Mount routes
 app.use('/', routes);
